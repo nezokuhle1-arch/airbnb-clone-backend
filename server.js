@@ -5,12 +5,19 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+// Importing routes
+const userRoutes = require('./routes/userRoutes');
+
+
 // Initializing express app
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json()); // Parse JSON bodies
+
+// Mounting routes
+app.use('/api/users', userRoutes);
 
 app.get('/', (req, res) => {
     res.json({message:'Airbnb Clone API is running'});
