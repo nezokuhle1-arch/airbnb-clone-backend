@@ -8,6 +8,8 @@ const cors = require('cors');
 // Importing routes
 const userRoutes = require('./routes/userRoutes');
 
+// Importing controllers
+const accommodationRoutes = require('./routes/accommodationRoutes');
 
 // Initializing express app
 const app = express();
@@ -18,7 +20,7 @@ app.use(express.json()); // Parse JSON bodies
 
 // Mounting routes
 app.use('/api/users', userRoutes);
-
+app.use('/api/accommodations', accommodationRoutes);
 app.get('/', (req, res) => {
     res.json({message:'Airbnb Clone API is running'});
 });
