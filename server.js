@@ -11,6 +11,8 @@ const userRoutes = require('./routes/userRoutes');
 // Importing controllers
 const accommodationRoutes = require('./routes/accommodationRoutes');
 
+// Importing reservation routes
+const reservationRoutes = require('./routes/reservationRoutes');
 // Initializing express app
 const app = express();
 
@@ -21,6 +23,7 @@ app.use(express.json()); // Parse JSON bodies
 // Mounting routes
 app.use('/api/users', userRoutes);
 app.use('/api/accommodations', accommodationRoutes);
+app.use('/api/reservations', reservationRoutes);
 app.get('/', (req, res) => {
     res.json({message:'Airbnb Clone API is running'});
 });
