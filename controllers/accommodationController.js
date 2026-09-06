@@ -41,5 +41,42 @@ const deleteAccommodation = async (req, res) => {
     }
 };
 
+const updateAccommodation = async (req, res) => {
+    try {
+    const accommodation = await Accommodation.findById(req.params.id);
 
-module.exports = { createAccommodation, getAllAccommodations, deleteAccommodation };
+    if (!accommodation) {
+        return res.status(404).json({ message: 'Accommodation not found'});
+    }
+
+    if (accommodation.host.toString() !== req.user.userId) {
+        return res.status(403).json({ message: 'Unauthorized to update this accommodation'});
+    }
+
+    const updatedAccommodation = await Accommodation.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true, runValidators: true }
+    );
+
+    res.status(200).json(updatedAccommodation);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update accommodation', error: error.message});
+    }
+};
+
+const getAccommodationById = async (req, res) => {
+    try {
+        const accommodation = await Accommodation.findById(req.params.id).populate('host', 'username email');
+
+        if (!accommodation) {
+            return res.status(404).json({ message: 'Accommodation not found'});
+        }
+
+        res.status(200).json(accommodation);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to get accommodation', error: error.message});
+    }
+};
+
+module.exports = { createAccommodation, getAllAccommodations, deleteAccommodation, updateAccommodation, getAccommodationById };
