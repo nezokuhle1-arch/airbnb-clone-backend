@@ -13,6 +13,7 @@ const seedUsers = async () => {
 
         const hashedUserPassword = await bcrypt.hash('password123', 10);
         const hashedHostPassword = await bcrypt.hash('password321', 10);
+        const hashedAdminPassword = await bcrypt.hash('password456', 10);
 
         await User.create([
             {
@@ -26,6 +27,12 @@ const seedUsers = async () => {
                 email: 'max@example.com',
                 password: hashedHostPassword,
                 role: 'host',
+            },
+            {
+                username: 'Admin',
+                email: 'bruno@example.com',
+                password: hashedAdminPassword,
+                role: 'admin',
             },
         ]);
 
