@@ -9,7 +9,10 @@ const createAccommodation = async (req, res) => {
 
         res.status(201).json(newAccommodation);
     } catch (error){
-        res.status(500).json({message: 'Failed to create accommodation', error: error.message});
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: 'Invalid listing data', error: error.message});
+        }
+        res.status(500).json({message: 'Failed to create accommodation'});
     }
 };
 
@@ -24,44 +27,60 @@ const getAllAccommodations = async (req, res) => {
 
 const deleteAccommodation = async (req, res) => {
     try {
-        const accommodation = await Accommodation.findById(req.params.id);
-
+        const accommodation = await Accommodation.findById(req.params.id);  
         if (!accommodation) {
-            return res.status(404).json({ message: 'Accommodation not found'});
+            return res.status(404).json({ message: 'Accommodation not found' });
         }
 
-        if (accommodation.host.toString() !== req.user.userId) {
-            return res.status(403).json({ message: 'Unauthorized to delete this accommodation'});
+        const isOwner = accommodation.host.toString() === req.user.userId;
+        const isAdmin = req.user.role === 'admin';
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: 'Not authorized to delete this listing' });
         }
 
         await accommodation.deleteOne();
-        res.status(200).json({ message: 'Accommodation deleted successfully'});
+        res.json({ message: 'Accommodation deleted' });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to delete accommodation', error: error.message});
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid accommodation id' });
+        }
+        res.status(500).json({ message: 'Failed to delete accommodation' });
     }
 };
 
 const updateAccommodation = async (req, res) => {
     try {
-    const accommodation = await Accommodation.findById(req.params.id);
+        // 1. Find first
+        const accommodation = await Accommodation.findById(req.params.id);
+        if (!accommodation) {
+            return res.status(404).json({ message: 'Accommodation not found' });
+        }
 
-    if (!accommodation) {
-        return res.status(404).json({ message: 'Accommodation not found'});
-    }
+        // 2. Check ownership. Admins may edit any listing.
+        const isOwner = accommodation.host.toString() === req.user.userId;
+        const isAdmin = req.user.role === 'admin';
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: 'Not authorized to modify this listing' });
+        }
 
-    if (accommodation.host.toString() !== req.user.userId) {
-        return res.status(403).json({ message: 'Unauthorized to update this accommodation'});
-    }
+        // 3. Never let the client reassign the host
+        delete req.body.host;
 
-    const updatedAccommodation = await Accommodation.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true, runValidators: true }
-    );
-
-    res.status(200).json(updatedAccommodation);
+        // 4. Act
+        const updated = await Accommodation.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        res.json(updated);
     } catch (error) {
-        res.status(500).json({ message: 'Failed to update accommodation', error: error.message});
+        if (error.name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid accommodation id' });
+        }
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ message: error.message });
+        }
+        res.status(500).json({ message: 'Failed to update accommodation' });
     }
 };
 
