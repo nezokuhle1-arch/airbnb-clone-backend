@@ -115,7 +115,7 @@ Required fields when creating: `title`, `location`, `type`, `price`. Optional fi
 |---|---|---|---|
 | POST | `/reservations` | any logged-in user | Create a reservation. Body: `accommodation`, `checkIn`, `checkOut`, `guests`, `totalCost`. The user is taken from the token |
 | GET | `/reservations/user` | any logged-in user | List the logged-in user's reservations |
-| GET | `/reservations/host` | host or admin | List reservations for the logged-in host's listings |
+| GET | `/reservations/host` | host or admin | List reservations for the logged-in host's listings | |
 | DELETE | `/reservations/:id` | owner of the reservation | Cancel a reservation |
 
 ### Example
