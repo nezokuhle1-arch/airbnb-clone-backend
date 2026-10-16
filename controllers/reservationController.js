@@ -31,16 +31,21 @@ const getReservationByUser = async (req, res) => {
 
 const getReservationByHost = async (req, res) => {
     try {
-        const hostAccommodations = await Accommodation.find({ host: req.user.userId });
-        const accommodationIds = hostAccommodations.map((acc) => acc._id);
+        // Admins see every reservation. Hosts only see reservations on their own listings.
+        let filter = {};
+        if (req.user.role !== 'admin') {
+            const hostAccommodations = await Accommodation.find({ host: req.user.userId });
+            const accommodationIds = hostAccommodations.map((acc) => acc._id);
+            filter = { accommodation: { $in: accommodationIds } };
+        }
 
-        const reservations = await Reservation.find({ accommodation: { $in: accommodationIds }})
+        const reservations = await Reservation.find(filter)
             .populate('accommodation', 'title location')
             .populate('user', 'username email');
 
         res.status(200).json(reservations);
     } catch (error) {
-        res.status(500).json({ message: 'Failed to get reservations', error: error.message});
+        res.status(500).json({ message: 'Failed to get reservations', error: error.message });
     }
 };
 
